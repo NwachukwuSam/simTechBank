@@ -28,9 +28,9 @@ public class User {
     private String stateOfOrigin;
     private String alternatePhoneNumber;
     private String accountNumber;
-    private BigDecimal balance;
+    private BigDecimal accountBalance;
     private String status;
-    private String password;
+
 
     @CreationTimestamp
     private LocalDateTime createdAt;
