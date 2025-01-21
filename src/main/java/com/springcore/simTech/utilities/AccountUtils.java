@@ -16,8 +16,8 @@ public class AccountUtils {
     public static final String ACCOUNT_CREDITED_SUCCESSFULLY_MESSAGE = "Account has been Credited successfully";
     public static final String ACCOUNT_DEBITED_CODE = "006";
     public static final String ACCOUNT_DEBITED_SUCCESSFULLY_MESSAGE = "Account has been Debited successfully";
-
-
+    public static final String INSUFFICIENT_FUNDS_CODE = "007";
+    public static final String INSUFFICIENT_FUNDS_MESSAGE = "Insufficient Funds";
 
     public static String generateAccountNumber() {
         /**

@@ -35,5 +35,9 @@ public class UserController {
     public BankResponse creditAccount(@RequestBody CreditDebitRequest request) {
         return userService.creditAccount(request);
     }
+    @PostMapping("/debit-account")
+    public BankResponse debitAccount(@RequestBody CreditDebitRequest request) {
+        return userService.debitAccount(request);
+    }
 
 }

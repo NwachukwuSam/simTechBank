@@ -8,6 +8,7 @@ import com.springcore.simTech.dto.requests.UserRequest;
 import com.springcore.simTech.dto.response.AccountInfo;
 import com.springcore.simTech.dto.response.BankResponse;
 import com.springcore.simTech.utilities.AccountUtils;
+import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
@@ -102,6 +103,7 @@ public class UserServiceImplement implements UserService {
         }
         User userToCredit = userRepository.findByAccountNumber(creditDebitRequest.getAccountNumber());
         userToCredit.setAccountBalance(userToCredit.getAccountBalance().add(creditDebitRequest.getAmount()));
+        userRepository.save(userToCredit);
 
         return BankResponse.builder()
                 .responseCode(AccountUtils.ACCOUNT_CREDITED_CODE)
@@ -109,6 +111,41 @@ public class UserServiceImplement implements UserService {
                 .accountInfo(AccountInfo.builder()
                         .accountName(userToCredit.getFirstName()+" "+userToCredit.getLastName()+" " +userToCredit.getOtherNames())
                         .accountBalance(userToCredit.getAccountBalance())
+                        .build())
+                .build();
+    }
+
+    @Override
+    public BankResponse debitAccount(CreditDebitRequest creditDebitRequest) {
+        boolean accountExists = userRepository.existsByAccountNumber(creditDebitRequest.getAccountNumber());
+        if(!accountExists) {
+            return BankResponse.builder()
+                    .responseCode(AccountUtils.ACCOUNT_DOES_NOT_EXIST_CODE)
+                    .responseMessage(AccountUtils.ACCOUNT_DOES_NOT_EXIST_MESSAGE)
+                    .accountInfo(null)
+                    .build();
+        }
+        User userToDebit = userRepository.findByAccountNumber(creditDebitRequest.getAccountNumber());
+        BigDecimal availableBalance = userToDebit.getAccountBalance();
+        BigDecimal debitAmount = creditDebitRequest.getAmount();
+        if (availableBalance.compareTo(debitAmount) < 0) {
+            return BankResponse.builder()
+                    .responseCode(AccountUtils.INSUFFICIENT_FUNDS_CODE)
+                    .responseMessage(AccountUtils.INSUFFICIENT_FUNDS_MESSAGE)
+                    .accountInfo(null)
+                    .build();
+
+        } else {
+            userToDebit.setAccountBalance(userToDebit.getAccountBalance().subtract(creditDebitRequest.getAmount()));
+            userRepository.save(userToDebit);
+        }
+
+        return BankResponse.builder()
+                .responseCode(AccountUtils.ACCOUNT_DEBITED_CODE)
+                .responseMessage(AccountUtils.ACCOUNT_DEBITED_SUCCESSFULLY_MESSAGE)
+                .accountInfo(AccountInfo.builder()
+                        .accountName(userToDebit.getFirstName()+" "+userToDebit.getLastName()+" " +userToDebit.getOtherNames())
+                        .accountBalance(userToDebit.getAccountBalance())
                         .build())
                 .build();
     }
