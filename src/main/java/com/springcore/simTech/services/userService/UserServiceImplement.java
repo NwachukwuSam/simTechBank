@@ -2,6 +2,7 @@ package com.springcore.simTech.services.userService;
 
 import com.springcore.simTech.data.model.User;
 import com.springcore.simTech.data.repository.UserRepository;
+import com.springcore.simTech.dto.requests.CreditDebitRequest;
 import com.springcore.simTech.dto.requests.EnquiryRequest;
 import com.springcore.simTech.dto.requests.UserRequest;
 import com.springcore.simTech.dto.response.AccountInfo;
@@ -87,5 +88,28 @@ public class UserServiceImplement implements UserService {
         User foundUser = userRepository.findByAccountNumber(enquiryRequest.getAccountNumber());
         return foundUser.getFirstName() + " " + foundUser.getLastName() + " "+ foundUser.getOtherNames();
 
+    }
+
+    @Override
+    public BankResponse creditAccount(CreditDebitRequest creditDebitRequest) {
+        boolean accountExists = userRepository.existsByAccountNumber(creditDebitRequest.getAccountNumber());
+        if(!accountExists) {
+            return BankResponse.builder()
+                    .responseCode(AccountUtils.ACCOUNT_DOES_NOT_EXIST_CODE)
+                    .responseMessage(AccountUtils.ACCOUNT_DOES_NOT_EXIST_MESSAGE)
+                    .accountInfo(null)
+                    .build();
+        }
+        User userToCredit = userRepository.findByAccountNumber(creditDebitRequest.getAccountNumber());
+        userToCredit.setAccountBalance(userToCredit.getAccountBalance().add(creditDebitRequest.getAmount()));
+
+        return BankResponse.builder()
+                .responseCode(AccountUtils.ACCOUNT_CREDITED_CODE)
+                .responseMessage(AccountUtils.ACCOUNT_CREDITED_SUCCESSFULLY_MESSAGE)
+                .accountInfo(AccountInfo.builder()
+                        .accountName(userToCredit.getFirstName()+" "+userToCredit.getLastName()+" " +userToCredit.getOtherNames())
+                        .accountBalance(userToCredit.getAccountBalance())
+                        .build())
+                .build();
     }
 }

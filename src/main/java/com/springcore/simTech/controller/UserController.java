@@ -1,5 +1,6 @@
 package com.springcore.simTech.controller;
 
+import com.springcore.simTech.dto.requests.CreditDebitRequest;
 import com.springcore.simTech.dto.requests.EnquiryRequest;
 import com.springcore.simTech.dto.requests.UserRequest;
 import com.springcore.simTech.dto.response.BankResponse;
@@ -28,6 +29,11 @@ public class UserController {
     @GetMapping("/name-enquiry")
     public String nameEnquiry(@RequestBody EnquiryRequest request) {
         return userService.nameRequest(request);
+    }
+
+    @PostMapping("/credit-account")
+    public BankResponse creditAccount(@RequestBody CreditDebitRequest request) {
+        return userService.creditAccount(request);
     }
 
 }
