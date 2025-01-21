@@ -1,14 +1,10 @@
 package com.springcore.simTech.dto.requests;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
+
+@Getter
+@Setter
 public class UserRequest {
     private String firstName;
     private String lastName;
@@ -17,6 +13,7 @@ public class UserRequest {
     private String phoneNumber;
     private String address;
     private String stateOfOrigin;
+    private String dateOfBirth;
     private String alternatePhoneNumber;
-    private String status;
+
 }
