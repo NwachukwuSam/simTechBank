@@ -8,6 +8,10 @@ public class AccountUtils {
     public static final String ACCOUNT_EXISTS_MESSAGE = "User with this email already exists";
     public static final String ACCOUNT_CREATED_CODE = "002";
     public static final String ACCOUNT_CREATED_MESSAGE = "Account created successfully";
+    public static final String ACCOUNT_DOES_NOT_EXIST_CODE = "003";
+    public static final String ACCOUNT_DOES_NOT_EXIST_MESSAGE = "User with Account details does not exist";
+    public static final String ACCOUNT_FOUND_CODE = "004";
+    public static final String ACCOUNT_SUCCESSFULLY_FOUND_MESSAGE = "Account Successfully found";
 
 
     public static String generateAccountNumber() {
