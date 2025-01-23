@@ -2,6 +2,7 @@ package com.springcore.simTech.services.userService;
 
 import com.springcore.simTech.dto.requests.CreditDebitRequest;
 import com.springcore.simTech.dto.requests.EnquiryRequest;
+import com.springcore.simTech.dto.requests.TransferRequest;
 import com.springcore.simTech.dto.requests.UserRequest;
 import com.springcore.simTech.dto.response.BankResponse;
 
@@ -16,5 +17,7 @@ public interface UserService {
     BankResponse creditAccount(CreditDebitRequest creditDebitRequest);
 
     BankResponse debitAccount(CreditDebitRequest creditDebitRequest);
+
+    BankResponse transfer(TransferRequest transferRequest);
 
 }

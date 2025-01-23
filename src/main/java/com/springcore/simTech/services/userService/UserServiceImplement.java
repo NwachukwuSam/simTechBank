@@ -2,10 +2,7 @@ package com.springcore.simTech.services.userService;
 
 import com.springcore.simTech.data.model.User;
 import com.springcore.simTech.data.repository.UserRepository;
-import com.springcore.simTech.dto.requests.CreditDebitRequest;
-import com.springcore.simTech.dto.requests.EmailRequest;
-import com.springcore.simTech.dto.requests.EnquiryRequest;
-import com.springcore.simTech.dto.requests.UserRequest;
+import com.springcore.simTech.dto.requests.*;
 import com.springcore.simTech.dto.response.AccountInfo;
 import com.springcore.simTech.dto.response.BankResponse;
 import com.springcore.simTech.services.emailService.EmailService;
@@ -163,6 +160,52 @@ public class UserServiceImplement implements UserService {
                         .accountName(userToDebit.getFirstName()+" "+userToDebit.getLastName()+" " +userToDebit.getOtherNames())
                         .accountBalance(userToDebit.getAccountBalance())
                         .build())
+                .build();
+    }
+
+    @Override
+    public BankResponse transfer(TransferRequest transferRequest) {
+        boolean destinationAccountExists = userRepository.existsByAccountNumber(transferRequest.getDestinationAccountNumber());
+        if(!destinationAccountExists) {
+            return BankResponse.builder()
+                    .responseCode(AccountUtils.ACCOUNT_DOES_NOT_EXIST_CODE)
+                    .responseMessage(AccountUtils.ACCOUNT_DOES_NOT_EXIST_MESSAGE)
+                    .accountInfo(null)
+                    .build();
+        }
+        User sourceAccount = userRepository.findByAccountNumber(transferRequest.getSourceAccountNumber());
+        if(transferRequest.getAmount().compareTo(sourceAccount.getAccountBalance()) > 0) {
+            return BankResponse.builder()
+                    .responseCode(AccountUtils.INSUFFICIENT_FUNDS_CODE)
+                    .responseMessage(AccountUtils.INSUFFICIENT_FUNDS_MESSAGE)
+                    .accountInfo(null)
+                    .build();
+        }
+        sourceAccount.setAccountBalance(sourceAccount.getAccountBalance().subtract(transferRequest.getAmount()));
+        userRepository.save(sourceAccount);
+        EmailRequest debitAlert = EmailRequest.builder()
+                .recipient(sourceAccount.getEmail())
+                .subject("DEBIT ALERT")
+                .messageBody("Hi "+sourceAccount.getFirstName()+" "+sourceAccount.getLastName()+ "\n "+ "The sum of"+transferRequest.getAmount() +"has been deducted from your account and \n transferred to"+ transferRequest.getDestinationAccountNumber()
+                +"\n Your account balance is now "+ sourceAccount.getAccountBalance())
+                .build();
+        emailService.sendEmail(debitAlert);
+
+        User destinationAccount = userRepository.findByAccountNumber(transferRequest.getDestinationAccountNumber());
+        destinationAccount.setAccountBalance(destinationAccount.getAccountBalance().add(transferRequest.getAmount()));
+        userRepository.save(destinationAccount);
+        EmailRequest creditAlert = EmailRequest.builder()
+                .recipient(destinationAccount.getEmail())
+                .subject("CREDIT ALERT")
+                .messageBody("Hi "+destinationAccount.getFirstName()+" "+destinationAccount.getLastName()+ "\n "+ "The sum of"+transferRequest.getAmount() +"has been sent to your account \n from "+ transferRequest.getSourceAccountNumber()
+                        +"\n Your account balance is now "+ destinationAccount.getAccountBalance())
+                .build();
+        emailService.sendEmail(creditAlert);
+
+        return BankResponse.builder()
+                .responseCode(AccountUtils.TRANSFER_SUCCESSFUL_CODE)
+                .responseMessage(AccountUtils.TRANSFER_SUCCESSFUL_MESSAGE)
+                .accountInfo(null)
                 .build();
     }
 }

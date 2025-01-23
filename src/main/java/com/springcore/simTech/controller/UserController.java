@@ -2,6 +2,7 @@ package com.springcore.simTech.controller;
 
 import com.springcore.simTech.dto.requests.CreditDebitRequest;
 import com.springcore.simTech.dto.requests.EnquiryRequest;
+import com.springcore.simTech.dto.requests.TransferRequest;
 import com.springcore.simTech.dto.requests.UserRequest;
 import com.springcore.simTech.dto.response.BankResponse;
 import com.springcore.simTech.services.userService.UserService;
@@ -37,6 +38,11 @@ public class UserController {
     @PostMapping("/debit-account")
     public BankResponse debitAccount(@RequestBody CreditDebitRequest request) {
         return userService.debitAccount(request);
+    }
+
+    @PostMapping("/transfer")
+    public BankResponse transfer(@RequestBody TransferRequest request) {
+        return userService.transfer(request);
     }
 
 }
