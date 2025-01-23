@@ -6,7 +6,6 @@ import com.springcore.simTech.dto.requests.UserRequest;
 import com.springcore.simTech.dto.response.BankResponse;
 import com.springcore.simTech.services.userService.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor

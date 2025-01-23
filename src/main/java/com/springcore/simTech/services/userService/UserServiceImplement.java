@@ -3,12 +3,13 @@ package com.springcore.simTech.services.userService;
 import com.springcore.simTech.data.model.User;
 import com.springcore.simTech.data.repository.UserRepository;
 import com.springcore.simTech.dto.requests.CreditDebitRequest;
+import com.springcore.simTech.dto.requests.EmailRequest;
 import com.springcore.simTech.dto.requests.EnquiryRequest;
 import com.springcore.simTech.dto.requests.UserRequest;
 import com.springcore.simTech.dto.response.AccountInfo;
 import com.springcore.simTech.dto.response.BankResponse;
+import com.springcore.simTech.services.emailService.EmailService;
 import com.springcore.simTech.utilities.AccountUtils;
-import jakarta.validation.constraints.Null;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
@@ -18,7 +19,12 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class UserServiceImplement implements UserService {
 
+
     final UserRepository userRepository;
+
+    final EmailService emailService;
+
+
     @Override
     public BankResponse createAccount(UserRequest userRequest) {
 
@@ -46,6 +52,15 @@ public class UserServiceImplement implements UserService {
                 .build();
 
         User savedUser = userRepository.save(newUser);
+
+        EmailRequest emailRequest = EmailRequest.builder()
+                .recipient(savedUser.getEmail())
+                .subject("ACCOUNT CREATION")
+                .messageBody("Congratulations! Your account has been Successfully created! \n Your account details are: \n"+
+                       "Account Name:"+ savedUser.getFirstName() +" "+ savedUser.getLastName()+ " " +savedUser.getOtherNames()+ "\n Account Number:"+ savedUser.getAccountNumber())
+                .build();
+        emailService.sendEmail(emailRequest);
+        System.out.println("Email Sent");
         return BankResponse.builder()
                 .responseCode(AccountUtils.ACCOUNT_CREATED_CODE)
                 .responseMessage(AccountUtils.ACCOUNT_CREATED_MESSAGE)
@@ -56,6 +71,7 @@ public class UserServiceImplement implements UserService {
                         .build())
                 .build();
     }
+
 
     @Override
     public BankResponse balanceEnquiry(EnquiryRequest enquiryRequest) {
