@@ -6,6 +6,8 @@ import com.springcore.simTech.dto.requests.*;
 import com.springcore.simTech.dto.response.AccountInfo;
 import com.springcore.simTech.dto.response.BankResponse;
 import com.springcore.simTech.services.emailService.EmailService;
+import com.springcore.simTech.services.transactionService.TransactionService;
+import com.springcore.simTech.services.transactionService.TransactionServiceImplement;
 import com.springcore.simTech.utilities.AccountUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,9 @@ public class UserServiceImplement implements UserService {
     final UserRepository userRepository;
 
     final EmailService emailService;
+
+    final TransactionService transactionService;
+
 
 
     @Override
@@ -118,6 +123,13 @@ public class UserServiceImplement implements UserService {
         userToCredit.setAccountBalance(userToCredit.getAccountBalance().add(creditDebitRequest.getAmount()));
         userRepository.save(userToCredit);
 
+        TransactionRequest transactionRequest = TransactionRequest.builder()
+                .transactionType("CREDIT")
+                .transactionAmount(creditDebitRequest.getAmount())
+                .accountNumber(userToCredit.getAccountNumber())
+                .build();
+        transactionService.saveTransaction(transactionRequest);
+
         return BankResponse.builder()
                 .responseCode(AccountUtils.ACCOUNT_CREDITED_CODE)
                 .responseMessage(AccountUtils.ACCOUNT_CREDITED_SUCCESSFULLY_MESSAGE)
@@ -152,6 +164,12 @@ public class UserServiceImplement implements UserService {
             userToDebit.setAccountBalance(userToDebit.getAccountBalance().subtract(creditDebitRequest.getAmount()));
             userRepository.save(userToDebit);
         }
+        TransactionRequest transactionRequest = TransactionRequest.builder()
+                .transactionType("DEBIT")
+                .transactionAmount(creditDebitRequest.getAmount())
+                .accountNumber(userToDebit.getAccountNumber())
+                .build();
+        transactionService.saveTransaction(transactionRequest);
 
         return BankResponse.builder()
                 .responseCode(AccountUtils.ACCOUNT_DEBITED_CODE)
@@ -201,6 +219,13 @@ public class UserServiceImplement implements UserService {
                         +"\n Your account balance is now "+ destinationAccount.getAccountBalance())
                 .build();
         emailService.sendEmail(creditAlert);
+
+        TransactionRequest transactionRequest = TransactionRequest.builder()
+                .transactionType("CREDIT")
+                .transactionAmount(transferRequest.getAmount())
+                .accountNumber(destinationAccount.getAccountNumber())
+                .build();
+        transactionService.saveTransaction(transactionRequest);
 
         return BankResponse.builder()
                 .responseCode(AccountUtils.TRANSFER_SUCCESSFUL_CODE)
