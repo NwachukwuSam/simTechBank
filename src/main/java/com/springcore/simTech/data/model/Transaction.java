@@ -2,8 +2,12 @@ package com.springcore.simTech.data.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Getter
 @Setter
@@ -20,5 +24,9 @@ public class Transaction {
     private BigDecimal transactionAmount;
     private String accountNumber;
     private String status;
+    @CreationTimestamp
+    private LocalDate transactionDate;
+    @UpdateTimestamp
+    private LocalTime modifiedAt;
 
 }

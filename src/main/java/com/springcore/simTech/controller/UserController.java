@@ -1,12 +1,11 @@
 package com.springcore.simTech.controller;
 
-import com.springcore.simTech.dto.requests.CreditDebitRequest;
-import com.springcore.simTech.dto.requests.EnquiryRequest;
-import com.springcore.simTech.dto.requests.TransferRequest;
-import com.springcore.simTech.dto.requests.UserRequest;
+import com.springcore.simTech.dto.requests.*;
 import com.springcore.simTech.dto.response.BankResponse;
+import com.springcore.simTech.dto.response.LoginResponse;
 import com.springcore.simTech.services.userService.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -15,10 +14,19 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     final UserService userService;
+    @GetMapping("/ping")
+    public ResponseEntity<String> ping() {
+        return ResponseEntity.ok("pong");
+    }
 
     @PostMapping("/create-account")
     public BankResponse createAccount(@RequestBody UserRequest userRequest) {
         return userService.createAccount(userRequest);
+    }
+
+    @PostMapping("/login")
+    public LoginResponse login(@RequestBody LoginRequest loginRequest) {
+        return userService.login(loginRequest);
     }
 
     @GetMapping("/balance-enquiry")

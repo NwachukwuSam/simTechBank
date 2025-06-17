@@ -5,11 +5,17 @@ import com.springcore.simTech.data.repository.UserRepository;
 import com.springcore.simTech.dto.requests.*;
 import com.springcore.simTech.dto.response.AccountInfo;
 import com.springcore.simTech.dto.response.BankResponse;
+import com.springcore.simTech.dto.response.LoginResponse;
+import com.springcore.simTech.securities.JwtTokenProvider;
 import com.springcore.simTech.services.emailService.EmailService;
 import com.springcore.simTech.services.transactionService.TransactionService;
-import com.springcore.simTech.services.transactionService.TransactionServiceImplement;
 import com.springcore.simTech.utilities.AccountUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 
@@ -20,10 +26,11 @@ public class UserServiceImplement implements UserService {
 
 
     final UserRepository userRepository;
-
     final EmailService emailService;
-
     final TransactionService transactionService;
+    final PasswordEncoder passwordEncoder;
+    final AuthenticationManager authenticationManager;
+    final JwtTokenProvider jwtTokenProvider;
 
 
 
@@ -42,6 +49,7 @@ public class UserServiceImplement implements UserService {
                 .firstName(userRequest.getFirstName())
                 .lastName(userRequest.getLastName())
                 .email(userRequest.getEmail())
+                .password(passwordEncoder.encode(userRequest.getPassword()))
                 .otherNames(userRequest.getOtherNames())
                 .phoneNumber(userRequest.getPhoneNumber())
                 .alternatePhoneNumber(userRequest.getAlternatePhoneNumber())
@@ -58,6 +66,7 @@ public class UserServiceImplement implements UserService {
         EmailRequest emailRequest = EmailRequest.builder()
                 .recipient(savedUser.getEmail())
                 .subject("ACCOUNT CREATION")
+                .recipient(savedUser.getEmail())
                 .messageBody("Congratulations! Your account has been Successfully created! \n Your account details are: \n"+
                        "Account Name:"+ savedUser.getFirstName() +" "+ savedUser.getLastName()+ " " +savedUser.getOtherNames()+ "\n Account Number:"+ savedUser.getAccountNumber())
                 .build();
@@ -73,6 +82,8 @@ public class UserServiceImplement implements UserService {
                         .build())
                 .build();
     }
+
+
 
 
     @Override
@@ -232,5 +243,34 @@ public class UserServiceImplement implements UserService {
                 .responseMessage(AccountUtils.TRANSFER_SUCCESSFUL_MESSAGE)
                 .accountInfo(null)
                 .build();
+    }
+
+    @Override
+    public LoginResponse login(LoginRequest loginRequest) {
+        System.out.println("Login request Started");
+            Authentication authentication = null;
+            authentication = authenticationManager.authenticate(
+
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getEmail(),
+                            loginRequest.getPassword()
+                    )
+            );
+        System.out.println("Login request received");
+            String token = jwtTokenProvider.generateToken(authentication);
+
+            User user = userRepository.findUserByEmail(loginRequest.getEmail())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        System.out.println("Login Successful");
+            return LoginResponse.builder()
+                    .responseCode("Login Successful")
+                    .responseMessage(token)
+                    .id(user.getId())
+                    .firstName(user.getFirstName())
+                    .lastName(user.getLastName())
+                    .email(user.getEmail())
+                    //.profilePicture(user.getProfilePicture())
+                    .build();
+
     }
 }
