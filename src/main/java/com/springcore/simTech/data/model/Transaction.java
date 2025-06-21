@@ -17,6 +17,7 @@ import java.time.LocalTime;
 @Entity
 @Table(name ="transaction")
 public class Transaction {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String transactionId;

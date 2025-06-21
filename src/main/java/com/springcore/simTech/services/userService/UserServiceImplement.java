@@ -1,6 +1,7 @@
 package com.springcore.simTech.services.userService;
 
-import com.springcore.simTech.data.model.User;
+import com.springcore.simTech.data.model.Roles;
+import com.springcore.simTech.data.model.Users;
 import com.springcore.simTech.data.repository.UserRepository;
 import com.springcore.simTech.dto.requests.*;
 import com.springcore.simTech.dto.response.AccountInfo;
@@ -45,7 +46,8 @@ public class UserServiceImplement implements UserService {
                     .build();
         }
 
-        User newUser = User.builder()
+        Users newUsers = Users.builder()
+                .role(Roles.ROLE_USER)
                 .firstName(userRequest.getFirstName())
                 .lastName(userRequest.getLastName())
                 .email(userRequest.getEmail())
@@ -61,14 +63,14 @@ public class UserServiceImplement implements UserService {
                 .status("ACTIVE")
                 .build();
 
-        User savedUser = userRepository.save(newUser);
+        Users savedUsers = userRepository.save(newUsers);
 
         EmailRequest emailRequest = EmailRequest.builder()
-                .recipient(savedUser.getEmail())
+                .recipient(savedUsers.getEmail())
                 .subject("ACCOUNT CREATION")
-                .recipient(savedUser.getEmail())
+                .recipient(savedUsers.getEmail())
                 .messageBody("Congratulations! Your account has been Successfully created! \n Your account details are: \n"+
-                       "Account Name:"+ savedUser.getFirstName() +" "+ savedUser.getLastName()+ " " +savedUser.getOtherNames()+ "\n Account Number:"+ savedUser.getAccountNumber())
+                       "Account Name:"+ savedUsers.getFirstName() +" "+ savedUsers.getLastName()+ " " + savedUsers.getOtherNames()+ "\n Account Number:"+ savedUsers.getAccountNumber())
                 .build();
         emailService.sendEmail(emailRequest);
         System.out.println("Email Sent");
@@ -76,9 +78,9 @@ public class UserServiceImplement implements UserService {
                 .responseCode(AccountUtils.ACCOUNT_CREATED_CODE)
                 .responseMessage(AccountUtils.ACCOUNT_CREATED_MESSAGE)
                 .accountInfo(AccountInfo.builder()
-                        .accountNumber(savedUser.getAccountNumber())
-                        .accountBalance(savedUser.getAccountBalance())
-                        .accountName(savedUser.getFirstName()+ " " + savedUser.getLastName()+ " "+ savedUser.getOtherNames())
+                        .accountNumber(savedUsers.getAccountNumber())
+                        .accountBalance(savedUsers.getAccountBalance())
+                        .accountName(savedUsers.getFirstName()+ " " + savedUsers.getLastName()+ " "+ savedUsers.getOtherNames())
                         .build())
                 .build();
     }
@@ -96,13 +98,13 @@ public class UserServiceImplement implements UserService {
                     .accountInfo(null)
                     .build();
         }
-        User foundUser = userRepository.findByAccountNumber(enquiryRequest.getAccountNumber());
+        Users foundUsers = userRepository.findByAccountNumber(enquiryRequest.getAccountNumber());
         return BankResponse.builder()
                 .responseCode(AccountUtils.ACCOUNT_FOUND_CODE)
                 .responseMessage(AccountUtils.ACCOUNT_SUCCESSFULLY_FOUND_MESSAGE)
                 .accountInfo(AccountInfo.builder()
-                        .accountBalance(foundUser.getAccountBalance())
-                        .accountName(foundUser.getFirstName()+" "+ foundUser.getLastName()+ " "+ foundUser.getOtherNames())
+                        .accountBalance(foundUsers.getAccountBalance())
+                        .accountName(foundUsers.getFirstName()+" "+ foundUsers.getLastName()+ " "+ foundUsers.getOtherNames())
                         .accountNumber(enquiryRequest.getAccountNumber())
                         .build())
                 .build();
@@ -115,8 +117,8 @@ public class UserServiceImplement implements UserService {
             return AccountUtils.ACCOUNT_DOES_NOT_EXIST_MESSAGE;
         }
 
-        User foundUser = userRepository.findByAccountNumber(enquiryRequest.getAccountNumber());
-        return foundUser.getFirstName() + " " + foundUser.getLastName() + " "+ foundUser.getOtherNames();
+        Users foundUsers = userRepository.findByAccountNumber(enquiryRequest.getAccountNumber());
+        return foundUsers.getFirstName() + " " + foundUsers.getLastName() + " "+ foundUsers.getOtherNames();
 
     }
 
@@ -130,14 +132,14 @@ public class UserServiceImplement implements UserService {
                     .accountInfo(null)
                     .build();
         }
-        User userToCredit = userRepository.findByAccountNumber(creditDebitRequest.getAccountNumber());
-        userToCredit.setAccountBalance(userToCredit.getAccountBalance().add(creditDebitRequest.getAmount()));
-        userRepository.save(userToCredit);
+        Users usersToCredit = userRepository.findByAccountNumber(creditDebitRequest.getAccountNumber());
+        usersToCredit.setAccountBalance(usersToCredit.getAccountBalance().add(creditDebitRequest.getAmount()));
+        userRepository.save(usersToCredit);
 
         TransactionRequest transactionRequest = TransactionRequest.builder()
                 .transactionType("CREDIT")
                 .transactionAmount(creditDebitRequest.getAmount())
-                .accountNumber(userToCredit.getAccountNumber())
+                .accountNumber(usersToCredit.getAccountNumber())
                 .build();
         transactionService.saveTransaction(transactionRequest);
 
@@ -145,8 +147,8 @@ public class UserServiceImplement implements UserService {
                 .responseCode(AccountUtils.ACCOUNT_CREDITED_CODE)
                 .responseMessage(AccountUtils.ACCOUNT_CREDITED_SUCCESSFULLY_MESSAGE)
                 .accountInfo(AccountInfo.builder()
-                        .accountName(userToCredit.getFirstName()+" "+userToCredit.getLastName()+" " +userToCredit.getOtherNames())
-                        .accountBalance(userToCredit.getAccountBalance())
+                        .accountName(usersToCredit.getFirstName()+" "+ usersToCredit.getLastName()+" " + usersToCredit.getOtherNames())
+                        .accountBalance(usersToCredit.getAccountBalance())
                         .build())
                 .build();
     }
@@ -161,8 +163,8 @@ public class UserServiceImplement implements UserService {
                     .accountInfo(null)
                     .build();
         }
-        User userToDebit = userRepository.findByAccountNumber(creditDebitRequest.getAccountNumber());
-        BigDecimal availableBalance = userToDebit.getAccountBalance();
+        Users usersToDebit = userRepository.findByAccountNumber(creditDebitRequest.getAccountNumber());
+        BigDecimal availableBalance = usersToDebit.getAccountBalance();
         BigDecimal debitAmount = creditDebitRequest.getAmount();
         if (availableBalance.compareTo(debitAmount) < 0) {
             return BankResponse.builder()
@@ -172,13 +174,13 @@ public class UserServiceImplement implements UserService {
                     .build();
 
         } else {
-            userToDebit.setAccountBalance(userToDebit.getAccountBalance().subtract(creditDebitRequest.getAmount()));
-            userRepository.save(userToDebit);
+            usersToDebit.setAccountBalance(usersToDebit.getAccountBalance().subtract(creditDebitRequest.getAmount()));
+            userRepository.save(usersToDebit);
         }
         TransactionRequest transactionRequest = TransactionRequest.builder()
                 .transactionType("DEBIT")
                 .transactionAmount(creditDebitRequest.getAmount())
-                .accountNumber(userToDebit.getAccountNumber())
+                .accountNumber(usersToDebit.getAccountNumber())
                 .build();
         transactionService.saveTransaction(transactionRequest);
 
@@ -186,8 +188,8 @@ public class UserServiceImplement implements UserService {
                 .responseCode(AccountUtils.ACCOUNT_DEBITED_CODE)
                 .responseMessage(AccountUtils.ACCOUNT_DEBITED_SUCCESSFULLY_MESSAGE)
                 .accountInfo(AccountInfo.builder()
-                        .accountName(userToDebit.getFirstName()+" "+userToDebit.getLastName()+" " +userToDebit.getOtherNames())
-                        .accountBalance(userToDebit.getAccountBalance())
+                        .accountName(usersToDebit.getFirstName()+" "+ usersToDebit.getLastName()+" " + usersToDebit.getOtherNames())
+                        .accountBalance(usersToDebit.getAccountBalance())
                         .build())
                 .build();
     }
@@ -202,7 +204,7 @@ public class UserServiceImplement implements UserService {
                     .accountInfo(null)
                     .build();
         }
-        User sourceAccount = userRepository.findByAccountNumber(transferRequest.getSourceAccountNumber());
+        Users sourceAccount = userRepository.findByAccountNumber(transferRequest.getSourceAccountNumber());
         if(transferRequest.getAmount().compareTo(sourceAccount.getAccountBalance()) > 0) {
             return BankResponse.builder()
                     .responseCode(AccountUtils.INSUFFICIENT_FUNDS_CODE)
@@ -220,7 +222,7 @@ public class UserServiceImplement implements UserService {
                 .build();
         emailService.sendEmail(debitAlert);
 
-        User destinationAccount = userRepository.findByAccountNumber(transferRequest.getDestinationAccountNumber());
+        Users destinationAccount = userRepository.findByAccountNumber(transferRequest.getDestinationAccountNumber());
         destinationAccount.setAccountBalance(destinationAccount.getAccountBalance().add(transferRequest.getAmount()));
         userRepository.save(destinationAccount);
         EmailRequest creditAlert = EmailRequest.builder()
@@ -259,16 +261,16 @@ public class UserServiceImplement implements UserService {
         System.out.println("Login request received");
             String token = jwtTokenProvider.generateToken(authentication);
 
-            User user = userRepository.findUserByEmail(loginRequest.getEmail())
+            Users users = userRepository.findUserByEmail(loginRequest.getEmail())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         System.out.println("Login Successful");
             return LoginResponse.builder()
                     .responseCode("Login Successful")
                     .responseMessage(token)
-                    .id(user.getId())
-                    .firstName(user.getFirstName())
-                    .lastName(user.getLastName())
-                    .email(user.getEmail())
+                    .id(users.getId())
+                    .firstName(users.getFirstName())
+                    .lastName(users.getLastName())
+                    .email(users.getEmail())
                     //.profilePicture(user.getProfilePicture())
                     .build();
 

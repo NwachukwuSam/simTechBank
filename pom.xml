@@ -15,7 +15,7 @@
 	<description>A Banking Application</description>
 
 	<properties>
-		<java.version>21</java.version>
+		<java.version>17</java.version>
 	</properties>
 
 	<dependencies>
@@ -103,6 +103,11 @@
 			<artifactId>itextpdf</artifactId>
 			<version>5.5.13.4</version>
 		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.boot</groupId>-->
+<!--			<artifactId>spring-boot-autoconfigure</artifactId>-->
+<!--			<version>3.3.5</version>-->
+<!--		</dependency>-->
 
 
 	</dependencies>
@@ -112,6 +117,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+
 				<configuration>
 					<annotationProcessorPaths>
 						<path>
