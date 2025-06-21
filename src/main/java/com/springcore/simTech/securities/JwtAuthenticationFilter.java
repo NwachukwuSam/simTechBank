@@ -31,28 +31,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
-
-
-        String authHeader = request.getHeader("Authorization");
+                String authHeader = request.getHeader("Authorization");
         String token = null;
         String username = null;
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            log.info("Extracted token: {}", token);
             try {
                 username = jwtTokenProvider.getUsername(token);
-                log.info("Extracted username: {}", username);
             } catch (Exception e) {
-                log.error("Error extracting username from token: {}", e.getMessage());
             }
         }
-
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            log.info("Loaded user details for: {}", userDetails.getUsername());
             if (jwtTokenProvider.validateToken(token, userDetails)) {
-                log.info("Token validated for user: {}", username);
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -64,25 +56,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter(request, response);
     }
-//        String token = getTokenFromRequest(request);
-//
-//        if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
-//            String userName = jwtTokenProvider.getUsername(token);
-//            UserDetails userDetails = userDetailsService.loadUserByUsername(userName);
-//            UsernamePasswordAuthenticationToken authenticationToken =
-//                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-//            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-//            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-//        }
-//
-//        filterChain.doFilter(request, response);
-//    }
-//
-//    private String getTokenFromRequest(HttpServletRequest request) {
-//        String bearerToken = request.getHeader("Authorization");
-//        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-//            return bearerToken.substring(7);
-//        }
-//        return null;
-//    }
 }
